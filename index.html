@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="es">
+<head>
+<title>Modo Pileta</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Entrenamiento diario de exposición para ansiedad social.">
+<meta name="theme-color" content="#0aa3c2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Modo Pileta">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday: a calm companion for a patient, not a game
+   IDEA a public pool: lanes, depth markings painted on the tiles, shallow end to deep end
+   PICTURE the pool cross-section showing how deep the patient has swum (exposure level)
+   COLOUR pool turquoise leads, deep blue supports, coral lane-rope accent; white tile by day, deep water by night
+   TYPE Archivo 800 for titles and depth numbers, Archivo for text
+   LAYOUT one column app (max 600px), pool band on top, challenge card under it, bottom tab bar */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#05213a);--ink:light-dark(#0b2236,#e9f5fb);--mut:light-dark(#4b6577,#9cbbcc);--pool:light-dark(#0aa3c2,#1bb8d6);--poolSoft:light-dark(#dff4f8,#0b3554);--deep:light-dark(#0b4f8a,#0f72b8);--acc:light-dark(#f2522f,#ff7a5c);--card:light-dark(#f3f9fb,#0a2d4a);--line:light-dark(#d4e6ee,#174462);--ok:light-dark(#08916a,#35d29c);--okSoft:light-dark(#e1f6ee,#0c3b38);--warn:light-dark(#b86a00,#ffb547)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+html,body{margin:0}
+.wrap{padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Archivo,system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:16px 10px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:34px;height:34px;flex:none}
+.brand b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.brand span{font-size:13px;color:var(--mut)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--poolSoft);color:var(--ink);white-space:nowrap}
+.sync{font-size:13px;color:var(--mut);display:flex;align-items:center;gap:6px;margin:0 0 10px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.sync.local i{background:var(--warn)}
+h1{font-size:clamp(26px,6vw,34px);line-height:1.08;letter-spacing:-.02em;font-weight:800;margin:0 0 6px}
+h2{font-size:20px;line-height:1.2;letter-spacing:-.01em;font-weight:800;margin:0 0 4px}
+h3{font-size:15px;font-weight:700;margin:0 0 8px}
+p{margin:0}
+.mut{color:var(--mut)}
+.small{font-size:13px}
+.poolfig{position:relative;height:178px;border-radius:20px;overflow:hidden;background:var(--poolSoft);margin-bottom:14px}
+.poolfig svg{position:absolute;inset:0;width:100%;height:100%}
+.poolfig svg text{font-family:Archivo,sans-serif}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tag{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.tag .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.ch-title{font-size:clamp(21px,5vw,25px);font-weight:700;line-height:1.25;letter-spacing:-.01em;margin:4px 0 16px}
+.tip{display:flex;gap:10px;padding:14px;border-radius:16px;background:var(--bg);border:1px solid var(--line);margin-bottom:18px}
+.tip svg{flex:none;width:22px;height:22px;color:var(--pool)}
+.tip b{display:block;font-size:13px;color:var(--deep);margin-bottom:2px}
+:root[data-theme=dark] .tip b{color:var(--pool)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .tip b{color:var(--pool)}}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:12px 18px;border-radius:16px;border:0;font:700 16px/1.2 Archivo,sans-serif;cursor:pointer;transition:transform .1s,filter .15s}
+.btn:active{transform:scale(.985)}
+.btn:focus-visible,.pill:focus-visible,nav button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn.pri{background:var(--pool);color:#03202f}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.sec{background:transparent;color:var(--ink);border:1.5px solid var(--line);margin-top:10px}
+.btn.sec:hover{border-color:var(--pool)}
+.btn.ghost{background:transparent;color:var(--mut);min-height:44px;font-weight:600;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.note{font-size:13px;color:var(--mut);text-align:center;margin-top:10px}
+.done-box{border-radius:18px;background:var(--okSoft);padding:18px;text-align:center}
+.done-box h3{color:var(--ok);font-size:18px;margin-bottom:4px}
+.versus{display:flex;justify-content:center;gap:18px;margin:12px 0 6px}
+.versus div{text-align:center}
+.versus b{display:block;font-size:34px;font-weight:800;line-height:1}
+.versus span{font-size:13px;color:var(--mut)}
+.swapinfo{font-size:13px;color:var(--mut);margin-top:12px;text-align:center}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 10px;text-align:center}
+.stat b{display:block;font-size:28px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--mut)}
+.sec-block{margin-bottom:14px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal div{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:var(--bg);border:1px solid var(--line);color:var(--mut)}
+.cal .d{background:var(--pool);border-color:var(--pool);color:#03202f}
+.cal .s{background:var(--bg);border:1.5px dashed var(--warn);color:var(--warn)}
+.cal .t{outline:2px solid var(--acc);outline-offset:1px}
+.cal .h{font-size:12px;border:0;background:none;aspect-ratio:auto}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mut);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+.db-row{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding-block:8px;border-top:1px solid var(--line)}
+.db-row:first-of-type{border-top:0}
+.db-lab{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.db-lab span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-lab span:last-child{white-space:nowrap;color:var(--mut)}
+.track{position:relative;height:16px}
+.track::before{content:"";position:absolute;left:0;right:0;top:7px;height:2px;background:var(--line)}
+.track .bar{position:absolute;top:6px;height:4px;border-radius:2px}
+.track .pt{position:absolute;top:2px;width:12px;height:12px;border-radius:50%;margin-left:-6px}
+.hbar{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) auto;align-items:center;gap:10px;font-size:14px;padding-block:5px}
+.hbar .b{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.hbar .b i{display:block;height:100%;border-radius:5px;background:var(--pool)}
+.hbar span:last-child{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap}
+.hist{display:grid;gap:8px}
+.hist .it{padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--card)}
+.hist .meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--mut);margin-bottom:4px}
+.hist .q{font-size:14px;border-left:3px solid var(--pool);padding-left:10px;margin-top:6px;color:var(--mut)}
+.hist .sw{border-style:dashed}
+.empty{border:1.5px dashed var(--line);border-radius:18px;padding:22px;text-align:center;color:var(--mut);font-size:14px}
+.guide{display:grid;gap:10px}
+.guide .card{padding:16px}
+.guide h3{font-size:16px;margin-bottom:4px}
+.guide p{font-size:15px;color:var(--mut)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:600px;margin:0 auto;display:flex}
+nav.tabs button{flex:1;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;color:var(--mut);font:600 12px Archivo,sans-serif;cursor:pointer}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button.on{color:var(--pool)}
+.sheet-bg{position:fixed;inset:0;z-index:40;background:rgba(2,16,28,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92svh;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:22px max(18px,env(safe-area-inset-left,0px)) calc(22px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+@media(min-width:640px){.sheet-bg{align-items:center}.sheet{border-radius:24px}}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.x{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:20px;line-height:1}
+.field{margin-bottom:18px}
+.field label,.field .lab{display:flex;justify-content:space-between;gap:10px;font-size:15px;font-weight:600;margin-bottom:8px}
+.field .val{font-weight:800;color:var(--pool);font-variant-numeric:tabular-nums;white-space:nowrap}
+.scale{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-top:2px}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;background:transparent;height:30px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--pool),var(--deep))}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--pool),var(--deep))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--bg);border:4px solid var(--acc);margin-top:-9px}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--bg);border:4px solid var(--acc)}
+input[type=text]{width:100%;font:16px Archivo,sans-serif;padding:13px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+input[type=text]:focus{outline:none;border-color:var(--pool)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:44px;padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:600 14px Archivo,sans-serif;cursor:pointer}
+.pill.on{background:var(--pool);border-color:var(--pool);color:#03202f}
+.reason{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:600 15px Archivo,sans-serif;cursor:pointer;margin-bottom:8px}
+.reason small{display:block;font-weight:400;color:var(--mut);font-size:13px;margin-top:2px}
+.reason:hover{border-color:var(--pool)}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;max-width:calc(100% - 32px);text-align:center}
+.onb{padding-top:8px}
+.onb .poolfig{height:150px}
+.pt-card{padding:16px;border-radius:18px;border:1px solid var(--line);background:var(--card);margin-bottom:10px}
+.pt-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.pt-head b{font-size:17px}
+.pt-nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:center;margin:8px 0}
+.pt-nums b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.pt-nums span{font-size:12px;color:var(--mut)}
+details summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--pool);padding-block:6px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.banner{font-size:14px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--warn) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--warn) 40%,var(--bg));margin-bottom:12px}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="var(--pool)"/><path d="M6 13c2 1.6 3.6 1.6 5.6 0s3.6-1.6 5.6 0 3.6 1.6 5.6 0 3.6-1.6 5.2 0M6 20c2 1.6 3.6 1.6 5.6 0s3.6-1.6 5.6 0 3.6 1.6 5.6 0 3.6-1.6 5.2 0" fill="none" stroke="#03202f" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <div><b>Modo Pileta</b><span id="whoLine">Exposición diaria</span></div>
+    </div>
+    <span class="chip" id="lvlChip" hidden></span>
+  </header>
+  <div class="sync" id="sync" hidden><i></i><span></span></div>
+  <div id="banner"></div>
+
+  <main id="v-load"><div class="empty">Cargando tu pileta…</div></main>
+
+  <main id="v-onb" class="onb" hidden>
+    <div class="poolfig"><svg id="poolOnb" aria-hidden="true"></svg></div>
+    <h1>Armá tu perfil</h1>
+    <p class="mut" style="margin-bottom:18px">Cada día vas a recibir un solo desafío. Empezás en la parte baja y vas bajando a lo hondo a medida que sumás repeticiones.</p>
+    <div class="field"><label for="alias">¿Cómo querés que te llame la app?</label><input id="alias" type="text" maxlength="30" placeholder="Un apodo alcanza" autocomplete="off"></div>
+    <div class="field"><div class="lab">¿En qué áreas querés entrenar?</div><div class="pills" id="areasOnb"></div><p class="small mut" style="margin-top:8px">Podés cambiarlas después en Brújula.</p></div>
+    <button class="btn pri" id="startBtn">Empezar a entrenar</button>
+    <button class="btn ghost" id="therBtn" hidden>Soy el terapeuta: ver pacientes</button>
+  </main>
+
+  <main id="v-today" hidden>
+    <div class="poolfig"><svg id="poolSvg" role="img" aria-label="Profundidad actual"></svg></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 2px 8px">
+      <span class="small mut" id="dateLbl"></span><span class="small mut" id="dayLbl"></span>
+    </div>
+    <section class="card">
+      <div class="tags" id="chTags"></div>
+      <p class="small" style="font-weight:700;color:var(--pool)">Tu único objetivo hoy</p>
+      <p class="ch-title" id="chTitle"></p>
+      <div class="tip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div><b>Sin traje de buzo</b><span id="chTip"></span></div>
+      </div>
+      <div id="actPending">
+        <button class="btn pri" id="doneBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Me tiré a la pileta</button>
+        <button class="btn sec" id="swapBtn">Elegir otro desafío</button>
+        <p class="note" id="swapNote">No hace falta hacerlo perfecto. Solo hacerlo y bancar la sensación.</p>
+      </div>
+      <div id="actDone" hidden>
+        <div class="done-box">
+          <h3>¡Repetición completada!</h3>
+          <div class="versus"><div><b id="vsA"></b><span>creías</span></div><div><b id="vsD"></b><span>fue</span></div></div>
+          <p class="small" id="vsTxt"></p>
+        </div>
+        <p class="note">Mañana se desbloquea el próximo desafío.</p>
+      </div>
+    </section>
+    <p class="swapinfo" id="swapInfo"></p>
+  </main>
+
+  <main id="v-prog" hidden>
+    <h1>Tu progreso real</h1>
+    <p class="mut" style="margin-bottom:16px">Datos de exposición, sin vueltas mentales.</p>
+    <div class="grid3">
+      <div class="stat"><b id="sTotal">0</b><span>Repeticiones</span></div>
+      <div class="stat"><b id="sStreak">0</b><span>Racha de días</span></div>
+      <div class="stat"><b id="sGap">–</b><span>Creías − fue</span></div>
+    </div>
+    <section class="card sec-block">
+      <h3>Últimas 4 semanas</h3>
+      <div class="cal" id="cal"></div>
+      <div class="legend"><span><i style="background:var(--pool)"></i>Hecho</span><span><i style="border:1.5px dashed var(--warn)"></i>Solo cambiado</span><span><i style="border:1px solid var(--line)"></i>Sin registro</span></div>
+    </section>
+    <section class="card sec-block">
+      <h3>Lo que esperabas vs. lo que pasó</h3>
+      <p class="small mut" style="margin-bottom:8px">Incomodidad de 0 a 10. <span style="color:var(--acc);font-weight:700">●</span> antes, <span style="color:var(--pool);font-weight:700">●</span> en la realidad.</p>
+      <div id="dumb"></div>
+    </section>
+    <section class="card sec-block">
+      <h3>Trajes de buzo que aparecieron</h3>
+      <div id="buzoBars"></div>
+    </section>
+    <section class="card sec-block">
+      <h3>Áreas entrenadas</h3>
+      <div id="areaBars"></div>
+    </section>
+    <h3 style="margin:18px 2px 10px">Evidencia acumulada</h3>
+    <div class="hist" id="hist"></div>
+  </main>
+
+  <main id="v-guide" hidden>
+    <h1>Brújula</h1>
+    <p class="mut" style="margin-bottom:16px">Recordatorios cortos para no caer en la rumiación.</p>
+    <div class="guide">
+      <div class="card"><h3>1. El músculo de la vergüenza</h3><p>Pensar en cómo entrenar el bíceps no lo hace crecer. La tolerancia a sentirte expuesto sube cuando ponés el cuerpo en situaciones reales y comprobás qué pasa de verdad.</p></div>
+      <div class="card"><h3>2. Soltar el traje de buzo</h3><p>Sobre-explicar, quedarte callado, el chiste para agradar, chequear si el otro está bien, el celular. Son protecciones que no dejan que aprendas que podías solo. El desafío vale doble sin ellas.</p></div>
+      <div class="card"><h3>3. Pensamientos como ruido</h3><p>Si la cabeza dice «van a pensar que soy un boludo» o «debería saber esto», no discutas ni analices. Nombralo («ahí está el pensamiento de…») y volvé la atención a lo que pasa afuera.</p></div>
+      <div class="card"><h3>4. Cambiar no es fallar</h3><p>Si hoy no se da la situación o te queda grande, elegí otro. Queda registrado para charlarlo en sesión. Lo que no ayuda es no tirarse nunca.</p></div>
+      <div class="card"><h3>5. Creías vs. fue</h3><p>Anotá cuánto creías que te iba a costar antes de hacerlo. Con el tiempo vas a ver la distancia entre lo que la cabeza anticipa y lo que pasa.</p></div>
+    </div>
+    <h3 style="margin:22px 2px 10px">Tu perfil</h3>
+    <section class="card">
+      <div class="field"><label for="aliasEdit">Apodo</label><input id="aliasEdit" type="text" maxlength="30"></div>
+      <div class="field"><div class="lab">Áreas</div><div class="pills" id="areasEdit"></div></div>
+      <button class="btn pri" id="saveProf">Guardar perfil</button>
+      <div class="row2" style="margin-top:10px">
+        <button class="btn sec" id="expBtn" style="margin-top:0">Descargar respaldo</button>
+        <label class="btn sec" style="margin-top:0" for="impFile">Cargar respaldo</label>
+      </div>
+      <input type="file" id="impFile" accept=".json,application/json" hidden>
+      <p class="small mut" style="margin-top:12px">Esta app acompaña tu tratamiento, no reemplaza las sesiones.</p>
+    </section>
+  </main>
+
+  <main id="v-ther" hidden>
+    <h1>Pacientes</h1>
+    <p class="mut" style="margin-bottom:16px">Solo vos ves este panel. Se actualiza en vivo.</p>
+    <div id="therList"><div class="empty">Cargando…</div></div>
+    <button class="btn ghost" id="backOnb" hidden>Probar la app como paciente</button>
+  </main>
+</div>
+
+<nav class="tabs" id="nav" hidden><div class="in">
+  <button data-v="today" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 10c2 1.5 3.5 1.5 5 0s3.5-1.5 5 0 3.5 1.5 5 0 3.5-1.5 5 0M2 16c2 1.5 3.5 1.5 5 0s3.5-1.5 5 0 3.5 1.5 5 0 3.5-1.5 5 0"/></svg>Hoy</button>
+  <button data-v="prog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Progreso</button>
+  <button data-v="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"/></svg>Brújula</button>
+  <button data-v="ther" id="navTher" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 4a4 4 0 0 1 0 8M22 21c0-3-1.5-5-4-5.7"/></svg>Pacientes</button>
+</div></nav>
+
+<div class="sheet-bg" id="sheetDone" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sdT">
+  <div class="sheet-h"><h2 id="sdT">Check-in rápido</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <div class="field"><label for="rA">Antes: ¿cuánto creías que te iba a costar? <span class="val" id="rAv">6 / 10</span></label><input type="range" id="rA" min="0" max="10" value="6"><div class="scale"><span>0 tranqui</span><span>10 bordó total</span></div></div>
+  <div class="field"><label for="rD">¿Y cuánto costó en la realidad? <span class="val" id="rDv">4 / 10</span></label><input type="range" id="rD" min="0" max="10" value="4"><div class="scale"><span>0 tranqui</span><span>10 bordó total</span></div></div>
+  <div class="field"><div class="lab">¿Apareció algún traje de buzo?</div><div class="pills" id="buzoPills"></div></div>
+  <div class="field"><label for="nota">¿Qué pasó en la realidad? <span class="mut" style="font-weight:400">opcional</span></label><input type="text" id="nota" maxlength="140" placeholder="Me puse colorado y seguimos charlando"></div>
+  <button class="btn pri" id="saveDone">Guardar repetición</button>
+</div></div>
+
+<div class="sheet-bg" id="sheetSwap" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ssT">
+  <div class="sheet-h"><h2 id="ssT">Elegir otro desafío</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <p class="mut" style="margin-bottom:14px">Contá por qué en un toque. Queda en tu registro, sin juicio.</p>
+  <button class="reason" data-r="nosedio">Hoy no se da la situación<small>Te doy otro del mismo nivel</small></button>
+  <button class="reason" data-r="dificil">Hoy me queda grande<small>Te doy uno un escalón más suave</small></button>
+  <button class="reason" data-r="noaplica">No aplica a mi vida<small>Te doy otro del mismo nivel</small></button>
+</div></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+{
+const AREAS={laburo:{n:'Laburo',c:'#2b7fff'},pareja:{n:'Pareja',c:'#e5487a'},amigos:{n:'Amigos',c:'#f0a000'},cotidiano:{n:'Cotidiano',c:'#8b5cf6'},gym:{n:'Gym',c:'#10a37f'},familia:{n:'Familia',c:'#e86a2c'}};
+const LV={1:'Parte baja',2:'Parte media',3:'Parte honda'};
+const NEED={1:5,2:6,3:8};
+const BUZO=['Sobre-explicar','Agarrar el celular','Chiste para desviar','Pedir perdón de más','Chequear si el otro está bien','Ensayar en la cabeza','Evitar la mirada','Irme antes','Ninguno'];
+const POOL=[
+{id:'l1',a:'laburo',l:1,d:'Interacción espontánea',t:'Saludá por el nombre a alguien del laburo con quien casi no hablás y preguntale cómo viene el día.',p:'Atención en lo que te responde, no en cómo sonás vos. Si hay un silencio corto, no lo rellenes de apuro.'},
+{id:'l2',a:'laburo',l:1,d:'Presencia sin escape',t:'Quedate 5 minutos en un espacio común (cocina, entrada) sin agarrar el celular para parecer ocupado.',p:'El celular suele ser un traje de buzo para no sentirte descolocado. Dejalo en el bolsillo.'},
+{id:'l3',a:'laburo',l:2,d:'Interacción espontánea',t:'Preguntale a alguien de otra área qué hace el finde o qué música escucha, sin hablar de trabajo.',p:'Si la charla no fluye, está bien. El objetivo es iniciarla, no que salga brillante.'},
+{id:'l4',a:'laburo',l:2,d:'Tolerar no saber',t:'Hacé una pregunta básica en voz alta sobre algo técnico o de proceso en vez de googlearlo en silencio.',p:'Notá el pensamiento «debería saber esto» y preguntá igual. Sin justificar por qué no sabés.'},
+{id:'l5',a:'laburo',l:3,d:'Expresión asertiva',t:'En una reunión, decí tu opinión o una duda al menos una vez, aunque no esté pulida.',p:'No ensayes la frase diez veces. Decila corta y bancá el silencio que venga después.'},
+{id:'l6',a:'laburo',l:3,d:'Quedar expuesto',t:'Pedí feedback concreto sobre algo que hiciste: «¿qué mejorarías de esto?».',p:'Escuchá la respuesta sin defenderte ni explicar. Alcanza con un «buenísimo, gracias».'},
+{id:'p1',a:'pareja',l:1,d:'Soltar el chequeo',t:'Compartí un rato tranquilo sin preguntar «¿está todo bien?» ni inventar un plan.',p:'Notá el impulso de asegurarte de que la está pasando bien. Dejá pasar la ola sin actuar.'},
+{id:'p2',a:'pareja',l:2,d:'Vulnerabilidad genuina',t:'Contale algo que hoy te dio duda o un poco de vergüenza, en dos frases simples.',p:'Compartí lo que sentiste sin buscar una solución lógica ni analizarlo media hora.'},
+{id:'p3',a:'pareja',l:2,d:'Expresión asertiva',t:'Proponé vos el plan de hoy (comida, peli, salida) sin preguntar tres veces si le parece bien.',p:'Si dice que no, se ajusta. Proponer no es imponer.'},
+{id:'p4',a:'pareja',l:3,d:'Vulnerabilidad genuina',t:'Decile algo que te molestó o necesitás, en primera persona y sin pedir perdón de entrada.',p:'«A mí me pasó…» alcanza. Bancá la incomodidad de que el otro tarde en responder.'},
+{id:'a1',a:'amigos',l:1,d:'Interacción espontánea',t:'Mandá vos el primer mensaje al grupo o a un amigo, sin esperar a que te escriban.',p:'No lo releas cinco veces antes de enviarlo. Mandalo y dejá el celular.'},
+{id:'a2',a:'amigos',l:2,d:'Exposición a la vergüenza',t:'Cuando hablen de algo que no dominás, decí «ni idea de eso, explíquenme» sin justificarte.',p:'No hace falta saber de todo ni compensar cambiando de tema. Quedate en el rol del que no sabe.'},
+{id:'a3',a:'amigos',l:2,d:'Pensamientos como ruido',t:'Contá una anécdota o tirá un chiste sin editarlo diez veces en tu cabeza antes.',p:'Si no hace reír a todos, excelente: sobreviviste a un momento incómodo sin drama.'},
+{id:'a4',a:'amigos',l:3,d:'Expresión asertiva',t:'Cuando te jodan con algo, respondé tranquilo o seguí la joda sin quedarte maquinando después.',p:'Si aparece la susceptibilidad, respirá y volvé a la charla del momento.'},
+{id:'a5',a:'amigos',l:3,d:'Quedar expuesto',t:'Proponé vos un plan concreto (día y lugar) y bancá que alguno diga que no.',p:'Un «no puedo» es sobre la agenda del otro, no sobre vos.'},
+{id:'c1',a:'cotidiano',l:1,d:'Hablar por puro arte',t:'Tirale un comentario casual a alguien que te cruces (kiosco, ascensor, fila).',p:'Sin expectativa de gran charla. El objetivo es romper el hielo y seguir.'},
+{id:'c2',a:'cotidiano',l:1,d:'Atención plena',t:'Hacé una pausa de 10 minutos sin pantallas cuando sientas tensión, sin intentar resolver nada.',p:'Dejá que la cabeza tire preguntas pendientes sin responderlas.'},
+{id:'c3',a:'cotidiano',l:2,d:'Quedar expuesto',t:'Preguntale una dirección o una recomendación a un desconocido, aunque puedas buscarla en el celular.',p:'Mirá a los ojos al preguntar y agradecé sin disculparte.'},
+{id:'c4',a:'cotidiano',l:2,d:'Expresión asertiva',t:'Si algo en un negocio no está como pediste, decilo amablemente y pedí que lo cambien.',p:'Una frase alcanza. No expliques de más por qué lo querés distinto.'},
+{id:'c5',a:'cotidiano',l:3,d:'Exposición a la vergüenza',t:'Hacé algo levemente «raro» en público: preguntá la hora teniendo reloj o pedí algo que sabés que no hay.',p:'La idea es comprobar que la gente sigue con lo suyo. Notá cuánto dura realmente la incomodidad.'},
+{id:'c6',a:'cotidiano',l:3,d:'Hablar por puro arte',t:'Elogiá algo concreto a un desconocido (un perro, una campera, cómo atiende).',p:'Decilo y seguí. No hace falta que salga una charla.'},
+{id:'g1',a:'gym',l:1,d:'Presencia sin escape',t:'Entrená una serie sin auriculares ni celular entre series.',p:'Notá las ganas de «hacer algo» en los descansos. Mirá alrededor y quedate.'},
+{id:'g2',a:'gym',l:2,d:'Quedar expuesto',t:'Pedile a alguien un consejo de técnica asumiendo que estás aprendiendo.',p:'Aceptá el calor en la cara. No pidas perdón por preguntar.'},
+{id:'g3',a:'gym',l:2,d:'Interacción espontánea',t:'Preguntale a alguien si le queda mucho con la máquina o si podés alternar series.',p:'Es un pedido normal. Notá qué anticipabas y qué pasó.'},
+{id:'g4',a:'gym',l:3,d:'Exposición a la vergüenza',t:'Probá un ejercicio nuevo delante de otros, aunque te salga torpe.',p:'Que se note que estás aprendiendo es justo el entrenamiento.'},
+{id:'f1',a:'familia',l:1,d:'Interacción espontánea',t:'Llamá (no mensaje) a alguien de tu familia solo para saber cómo está.',p:'Si hay silencios, no los tapes con preguntas de compromiso. Está bien.'},
+{id:'f2',a:'familia',l:2,d:'Aceptación emocional',t:'Si alguien te elogia, respondé solo «gracias, me costó pero salió» sin minimizarlo.',p:'Bancar un elogio también es exposición. Evitá el chiste para desviar la atención.'},
+{id:'f3',a:'familia',l:3,d:'Expresión asertiva',t:'Decí que no a un pedido o plan que no querés, sin inventar una excusa elaborada.',p:'«Esta vez no puedo» es suficiente. Notá la culpa y dejala estar.'}
+];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>ymd(new Date());
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const daysBetween=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
+const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+const fmtDate=s=>parse(s).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+const shortDate=s=>parse(s).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+const MAXSWAP=3;
+
+let S=null,uid=null,db=null,dl=null,mode='local',isOwner=false,therUnsub=null,view='today';
+const LKEY='modoPileta.v1';
+
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.tm);toast.tm=setTimeout(()=>t.hidden=true,2600)}
+function setSync(kind){const el=$('sync');el.hidden=false;el.className='sync'+(kind==='cloud'?'':' local');el.querySelector('span').textContent=kind==='cloud'?'Guardado en tu cuenta':kind==='err'?'No se pudo guardar en la nube, reintentá más tarde':'Guardado en este dispositivo · descargá un respaldo cada tanto desde Brújula'}
+function banner(html){$('banner').innerHTML=html?'<div class="banner">'+html+'</div>':''}
+
+function localLoad(){try{const r=localStorage.getItem(LKEY);return r?JSON.parse(r):null}catch(e){return null}}
+function localSave(d){try{localStorage.setItem(LKEY,JSON.stringify(d))}catch(e){}}
+let wq=Promise.resolve();
+function save(){S.updatedAt=Date.now();const snap=JSON.parse(JSON.stringify(S));localSave(snap);wq=wq.then(()=>persist(snap))}
+async function persist(doc){
+  if(mode!=='cloud')return;
+  try{await db.doc('pacientes/'+uid).set(doc);setSync('cloud')}
+  catch(e){
+    if(e&&e.code==='invalid_argument'){mode='local';setSync('local');banner('Tu cuenta no tiene permiso para guardar en la nube. Pedile a tu terapeuta que te comparta la app como <b>Colaborador</b>. Mientras tanto se guarda en este dispositivo.')}
+    else if(e&&e.code==='quota_exceeded'){setSync('err');banner('El registro se llenó. Descargá un respaldo desde Brújula y avisale a tu terapeuta.')}
+    else setSync('err');
+  }
+}
+
+/* ---------- lógica de exposición ---------- */
+function done(st){return st.entries.filter(e=>e.s==='done')}
+function levelInfo(st){
+  const d=done(st);const c1=d.filter(e=>e.l===1).length,c2=d.filter(e=>e.l===2).length,c3=d.filter(e=>e.l===3).length;
+  if(c1<NEED[1])return{l:1,n:c1,need:NEED[1],x:c1/NEED[1]/3};
+  if(c2<NEED[2])return{l:2,n:c2,need:NEED[2],x:1/3+c2/NEED[2]/3};
+  return{l:3,n:c3,need:NEED[3],x:2/3+Math.min(c3/NEED[3],1)/3};
+}
+function todayState(st){
+  const t=today();const ent=st.entries.filter(e=>e.date===t);
+  const dn=ent.find(e=>e.s==='done');
+  const swaps=ent.filter(e=>e.s==='swap');
+  if(dn)return{c:POOL.find(p=>p.id===dn.cid)||POOL[0],dn,swaps};
+  let lvl=levelInfo(st).l;
+  const last=swaps[swaps.length-1];
+  if(last&&last.r==='dificil')lvl=Math.max(1,last.l-1);
+  else if(last)lvl=last.l;
+  const recent=new Set(done(st).filter(e=>daysBetween(e.date,t)<14).map(e=>e.cid));
+  const skip=new Set(swaps.map(e=>e.cid));
+  const seed=(uid||st.created||'x')+t;
+  const pref=list=>list.length?list.slice().sort((a,b)=>hash(seed+a.id)-hash(seed+b.id))[0]:null;
+  const cand=POOL.filter(p=>st.areas.includes(p.a)&&!skip.has(p.id));
+  const all=POOL.filter(p=>!skip.has(p.id));
+  const c=pref(cand.filter(p=>p.l===lvl&&!recent.has(p.id)))||pref(cand.filter(p=>p.l===lvl))||pref(cand.filter(p=>p.l<lvl))||pref(all.filter(p=>p.l<=lvl))||POOL[0];
+  return{c,dn:null,swaps};
+}
+function streak(st){
+  const days=new Set(done(st).map(e=>e.date));let d=new Date();
+  if(!days.has(ymd(d)))d.setDate(d.getDate()-1);
+  let n=0;while(days.has(ymd(d))){n++;d.setDate(d.getDate()-1)}return n;
+}
+
+/* ---------- dibujo de la pileta ---------- */
+function drawPool(svg,x,label){
+  const W=svg.clientWidth,H=svg.clientHeight;if(!W)return;
+  const top=34,pad=14,shallow=H*.42,deep=H-16;
+  const floorY=f=>f<1/3?shallow:f<2/3?shallow+(deep-shallow)*.5:deep;
+  const xs=[0,1/3,2/3,1].map(f=>pad+f*(W-2*pad));
+  let floor=`M${pad} ${top} L${pad} ${shallow}`;
+  for(let i=0;i<3;i++){const y=floorY(i/3+.01);floor+=` L${xs[i]} ${y} L${xs[i+1]-(i<2?18:0)} ${y}`;if(i<2)floor+=` L${xs[i+1]} ${floorY((i+1)/3+.01)}`}
+  floor+=` L${W-pad} ${top} Z`;
+  let tiles='';for(let gx=pad+22;gx<W-pad;gx+=22)tiles+=`<line x1="${gx}" y1="${top}" x2="${gx}" y2="${deep}" />`;
+  for(let gy=top+22;gy<deep;gy+=22)tiles+=`<line x1="${pad}" y1="${gy}" x2="${W-pad}" y2="${gy}" />`;
+  let rope='';for(let rx=pad+6,i=0;rx<W-pad;rx+=13,i++)rope+=`<circle cx="${rx}" cy="${top-1}" r="4.2" fill="${i%4<2?'var(--acc)':'#fff'}" stroke="var(--deep)" stroke-width=".8"/>`;
+  const mx=pad+Math.max(.03,Math.min(.97,x))*(W-2*pad),my=floorY(Math.min(x,.999))-14;
+  const lbl=[['1,0 m',0],['1,6 m',1],['2,4 m',2]].map(([m,i])=>`<text x="${xs[i+1]-(i<2?28:10)}" y="${floorY(i/3+.01)-10}" text-anchor="end" font-size="13" font-weight="800" fill="#fff" opacity=".85">${m}</text>`).join('');
+  const wave=Array.from({length:Math.ceil(W/40)+1},(_,i)=>`q10 -5 20 0 t20 0`).join('');
+  svg.innerHTML=`<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--pool)" stop-opacity=".55"/><stop offset="1" stop-color="var(--deep)" stop-opacity=".85"/></linearGradient><clipPath id="cp"><path d="${floor}"/></clipPath></defs>
+  <rect x="0" y="0" width="${W}" height="${top-6}" fill="var(--bg)" opacity=".35"/>
+  <path d="${floor}" fill="url(#wg)"/>
+  <g clip-path="url(#cp)" stroke="#fff" stroke-opacity=".16" stroke-width="1">${tiles}</g>
+  <path d="M${pad} ${top+3} ${wave}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2" clip-path="url(#cp)"/>
+  ${rope}
+  <text x="${pad}" y="18" font-size="13" font-weight="700" fill="var(--ink)">Parte baja</text>
+  <text x="${W-pad}" y="18" font-size="13" font-weight="700" fill="var(--ink)" text-anchor="end">Parte honda</text>
+  ${lbl}
+  <line x1="${mx}" y1="${top+6}" x2="${mx}" y2="${my-10}" stroke="#fff" stroke-dasharray="3 4" stroke-width="1.5"/>
+  <circle cx="${mx}" cy="${my}" r="10" fill="var(--acc)" stroke="#fff" stroke-width="3"/>
+  ${label?`<text x="${mx>W-110?mx-18:mx+18}" y="${my+5}" text-anchor="${mx>W-110?'end':'start'}" font-size="13" font-weight="800" fill="#fff" style="paint-order:stroke;stroke:var(--deep);stroke-width:4px">${esc(label)}</text>`:''}`;
+}
+const poolRO=new ResizeObserver(()=>{if(S&&!$('v-today').hidden)drawPool($('poolSvg'),levelInfo(S).x,'');if(!$('v-onb').hidden)drawPool($('poolOnb'),.06,'Arrancás acá')});
+poolRO.observe($('poolSvg'));poolRO.observe($('poolOnb'));
+
+/* ---------- vistas ---------- */
+function show(id){['load','onb','today','prog','guide','ther'].forEach(v=>$('v-'+v).hidden=v!==id)}
+function go(v){view=v;show(v);document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(v==='today')renderToday();if(v==='prog')renderProg();if(v==='guide')renderGuide();if(v==='ther')startTher();window.scrollTo(0,0)}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+
+function pills(el,list,sel,multi){el.innerHTML=list.map(([k,n])=>`<button type="button" class="pill${sel.includes(k)?' on':''}" data-k="${esc(k)}" aria-pressed="${sel.includes(k)}">${esc(n)}</button>`).join('');
+  el.onclick=e=>{const b=e.target.closest('.pill');if(!b)return;if(!multi)el.querySelectorAll('.pill').forEach(p=>{if(p!==b){p.classList.remove('on');p.setAttribute('aria-pressed','false')}});b.classList.toggle('on');b.setAttribute('aria-pressed',b.classList.contains('on'))}}
+const picked=el=>[...el.querySelectorAll('.pill.on')].map(b=>b.dataset.k);
+const areaList=()=>Object.entries(AREAS).map(([k,v])=>[k,v.n]);
+
+function header(){const li=levelInfo(S);$('lvlChip').hidden=false;$('lvlChip').textContent=LV[li.l];$('whoLine').textContent='Hola, '+(S.alias||'nadador/a');$('nav').hidden=false}
+
+function renderToday(){
+  header();const st=todayState(S),c=st.c,li=levelInfo(S);
+  drawPool($('poolSvg'),li.x,'');
+  $('poolSvg').setAttribute('aria-label',LV[li.l]+': '+li.n+' de '+li.need+' repeticiones en este nivel');
+  $('dateLbl').textContent=fmtDate(today());
+  $('dayLbl').textContent=li.l<3?`${li.n}/${li.need} para bajar a la ${LV[li.l+1].toLowerCase()}`:`${li.n} reps en lo hondo`;
+  const ar=AREAS[c.a];
+  $('chTags').innerHTML=`<span class="tag"><span class="dot" style="background:${ar.c}"></span>${esc(ar.n)}</span><span class="tag">${esc(c.d)}</span><span class="tag">${esc(LV[c.l])}</span>`;
+  $('chTitle').textContent=c.t;$('chTip').textContent=c.p;
+  $('actPending').hidden=!!st.dn;$('actDone').hidden=!st.dn;
+  const left=MAXSWAP-st.swaps.length;
+  $('swapBtn').disabled=left<=0;
+  $('swapBtn').textContent=left>0?'Elegir otro desafío':'Sin cambios por hoy';
+  $('swapInfo').textContent=st.dn?'':st.swaps.length?`Cambiaste ${st.swaps.length} ${st.swaps.length===1?'vez':'veces'} hoy · ${left>0?'te quedan '+left:'quedate con este'}`:'';
+  if(st.dn){$('vsA').textContent=st.dn.ant;$('vsD').textContent=st.dn.real;const g=st.dn.ant-st.dn.real;
+    $('vsTxt').textContent=g>0?`La cabeza anticipó ${g} punto${g>1?'s':''} más de lo que pasó.`:g===0?'Fue tal cual lo esperabas, y lo hiciste igual.':'Costó más de lo esperado, y lo bancaste. Eso también cuenta.'}
+}
+
+function renderProg(){
+  const d=done(S),t=today();
+  $('sTotal').textContent=d.length;$('sStreak').textContent=streak(S);
+  {const g=d.length?d.reduce((a,e)=>a+e.ant-e.real,0)/d.length:null;$('sGap').textContent=g===null?'–':(g>0?'+':'')+g.toFixed(1)}
+  const byDay={};S.entries.forEach(e=>{byDay[e.date]=byDay[e.date]==='d'||e.s==='done'?'d':'s'});
+  const start=new Date();start.setDate(start.getDate()-27);const off=(start.getDay()+6)%7;
+  let cells=['L','M','M','J','V','S','D'].map(h=>`<div class="h">${h}</div>`).join('')+'<div class="h" style="visibility:hidden"></div>'.repeat(off);
+  for(let i=0;i<28;i++){const x=new Date(start);x.setDate(start.getDate()+i);const k=ymd(x);cells+=`<div class="${byDay[k]||''}${k===t?' t':''}" title="${shortDate(k)}">${x.getDate()}</div>`}
+  $('cal').innerHTML=cells;
+  const last=d.slice(-8).reverse();
+  $('dumb').innerHTML=last.length?last.map(e=>{const p=POOL.find(q=>q.id===e.cid);const a=e.ant*10,r=e.real*10,lo=Math.min(a,r),hi=Math.max(a,r);
+    return `<div class="db-row"><div class="db-lab"><span>${esc(shortDate(e.date))} · ${esc(p?AREAS[p.a].n:'')}</span><span>${e.ant} → ${e.real}</span></div><div class="track"><div class="bar" style="left:${lo}%;width:${hi-lo}%;background:${e.real<=e.ant?'var(--pool)':'var(--acc)'};opacity:.5"></div><div class="pt" style="left:${a}%;background:var(--acc)"></div><div class="pt" style="left:${r}%;background:var(--pool)"></div></div></div>`}).join(''):'<div class="empty">Cuando registres tu primera repetición vas a ver acá la distancia entre lo que esperabas y lo que pasó.</div>';
+  const bc={};d.forEach(e=>(e.buzo||[]).forEach(b=>bc[b]=(bc[b]||0)+1));const bmax=Math.max(1,...Object.values(bc));
+  const bl=Object.entries(bc).sort((a,b)=>b[1]-a[1]);
+  $('buzoBars').innerHTML=bl.length?bl.map(([k,n])=>`<div class="hbar"><span>${esc(k)}</span><div class="b"><i style="width:${n/bmax*100}%;${k==='Ninguno'?'background:var(--ok)':''}"></i></div><span>${n}</span></div>`).join(''):'<p class="small mut">Todavía sin datos.</p>';
+  const ac={};d.forEach(e=>{const p=POOL.find(q=>q.id===e.cid);if(p)ac[p.a]=(ac[p.a]||0)+1});const amax=Math.max(1,...Object.values(ac));
+  $('areaBars').innerHTML=S.areas.map(k=>`<div class="hbar"><span>${esc(AREAS[k].n)}</span><div class="b"><i style="width:${(ac[k]||0)/amax*100}%;background:${AREAS[k].c}"></i></div><span>${ac[k]||0}</span></div>`).join('');
+  const RS={nosedio:'No se dio la situación',dificil:'Le quedó grande',noaplica:'No aplicaba'};
+  const h=S.entries.slice().reverse().slice(0,40);
+  $('hist').innerHTML=h.length?h.map(e=>{const p=POOL.find(q=>q.id===e.cid);const ar=p?AREAS[p.a]:{n:'',c:'#999'};
+    return e.s==='done'?`<div class="it"><div class="meta"><span><span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${ar.c};margin-right:6px"></span>${esc(ar.n)} · ${esc(shortDate(e.date))}</span><span>${e.ant} → ${e.real}</span></div><div style="font-size:15px;font-weight:600">${esc(p?p.t:'')}</div>${e.nota?`<div class="q">${esc(e.nota)}</div>`:''}</div>`
+    :`<div class="it sw"><div class="meta"><span>Cambiado · ${esc(shortDate(e.date))}</span><span>${esc(RS[e.r]||'')}</span></div><div class="small mut">${esc(p?p.t:'')}</div></div>`}).join(''):'<div class="empty">Todavía no hay repeticiones. Cuando completes el desafío de hoy va a aparecer acá como evidencia.</div>';
+}
+
+function renderGuide(){$('aliasEdit').value=S.alias||'';pills($('areasEdit'),areaList(),S.areas,true)}
+
+/* ---------- acciones ---------- */
+function openSheet(id){$(id).hidden=false}
+function closeSheets(){$('sheetDone').hidden=true;$('sheetSwap').hidden=true}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
+document.querySelectorAll('.sheet-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)closeSheets()}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheets()});
+const rv=(id)=>$(id+'v').textContent=$(id).value+' / 10';
+$('rA').oninput=()=>rv('rA');$('rD').oninput=()=>rv('rD');
+
+$('doneBtn').onclick=()=>{$('rA').value=6;$('rD').value=4;rv('rA');rv('rD');$('nota').value='';pills($('buzoPills'),BUZO.map(b=>[b,b]),[],true);openSheet('sheetDone')};
+$('saveDone').onclick=()=>{
+  const st=todayState(S);if(st.dn){closeSheets();return}
+  S.entries.push({date:today(),ts:Date.now(),s:'done',cid:st.c.id,l:st.c.l,ant:+$('rA').value,real:+$('rD').value,buzo:picked($('buzoPills')),nota:$('nota').value.trim().slice(0,140)});
+  const before=levelInfo({entries:S.entries.slice(0,-1)}).l,after=levelInfo(S).l;
+  save();closeSheets();renderToday();
+  toast(after>before?`¡Bajaste a la ${LV[after].toLowerCase()}!`:'¡Una rep más! Sobreviviste al agua fría.');
+};
+$('swapBtn').onclick=()=>openSheet('sheetSwap');
+document.querySelectorAll('.reason').forEach(b=>b.onclick=()=>{
+  const st=todayState(S);if(st.dn||st.swaps.length>=MAXSWAP){closeSheets();return}
+  S.entries.push({date:today(),ts:Date.now(),s:'swap',cid:st.c.id,l:st.c.l,r:b.dataset.r});
+  save();closeSheets();renderToday();toast('Listo, acá tenés otro');
+});
+$('therBtn').onclick=()=>{show('ther');$('backOnb').hidden=false;startTher()};
+$('backOnb').onclick=()=>{$('backOnb').hidden=true;show('onb');drawPool($('poolOnb'),.06,'Arrancás acá')};
+$('startBtn').onclick=()=>{
+  const areas=picked($('areasOnb'));const alias=$('alias').value.trim().slice(0,30);
+  if(!areas.length){toast('Elegí al menos un área');return}
+  S={v:1,alias,areas,created:today(),entries:[]};save();go('today');
+};
+$('saveProf').onclick=()=>{const areas=picked($('areasEdit'));if(!areas.length){toast('Elegí al menos un área');return}
+  S.alias=$('aliasEdit').value.trim().slice(0,30);S.areas=areas;save();header();toast('Perfil guardado')};
+$('expBtn').onclick=async()=>{const name='modo-pileta-'+today()+'.json',data=JSON.stringify(S,null,1);
+  if(dl){try{await dl.save({filename:name,data})}catch(e){if(e&&e.code!=='cancelled')toast('No se pudo descargar')}return}
+  try{const f=new File([data],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Respaldo Modo Pileta'});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)};
+$('impFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.entries)||!Array.isArray(d.areas))throw 0;
+    const seen=new Set(S.entries.map(x=>x.ts+x.s));d.entries.forEach(x=>{if(x&&x.date&&x.s&&!seen.has(x.ts+x.s))S.entries.push({date:String(x.date),ts:+x.ts||0,s:x.s==='done'?'done':'swap',cid:String(x.cid),l:+x.l||1,ant:+x.ant||0,real:+x.real||0,buzo:Array.isArray(x.buzo)?x.buzo.map(String).slice(0,9):[],nota:String(x.nota||'').slice(0,140),r:x.r?String(x.r):undefined})});
+    S.entries.sort((a,b)=>a.ts-b.ts);save();toast('Respaldo cargado')}catch(err){toast('Ese archivo no es un respaldo válido')}};
+
+/* ---------- panel del terapeuta ---------- */
+function startTher(){
+  if(therUnsub||!db){if(!db)$('therList').innerHTML='<div class="empty">El panel necesita la conexión a la nube.</div>';return}
+  const tm=setTimeout(()=>{$('therList').innerHTML='<div class="empty">No se pudo cargar todavía. Revisá la conexión.</div>'},10000);
+  therUnsub=db.collection('pacientes').onSnapshot(snap=>{clearTimeout(tm);renderTher(snap.docs.filter(x=>x.exists).map(x=>({id:x.id,d:x.data()})))},()=>{clearTimeout(tm);therUnsub=null;$('therList').innerHTML='<div class="empty">Se cortó la conexión. Recargá la app.</div>'});
+}
+function renderTher(list){
+  if(!list.length){$('therList').innerHTML='<div class="empty">Todavía no hay pacientes con registros. Compartí este link con tu paciente como Colaborador.</div>';return}
+  const t=today();
+  list.sort((a,b)=>(b.d.updatedAt||0)-(a.d.updatedAt||0));
+  $('therList').innerHTML=list.map(({id,d})=>{
+    const ent=Array.isArray(d.entries)?d.entries:[];const dn=ent.filter(e=>e.s==='done'),sw=ent.filter(e=>e.s==='swap');
+    const li=levelInfo({entries:ent});const wk=dn.filter(e=>daysBetween(e.date,t)<7).length;
+    const gap=dn.length?(dn.reduce((a,e)=>a+(+e.ant||0)-(+e.real||0),0)/dn.length).toFixed(1):'–';
+    const lastDay=ent.length?ent[ent.length-1].date:null;
+    const bc={};dn.forEach(e=>(e.buzo||[]).forEach(b=>{if(b!=='Ninguno')bc[b]=(bc[b]||0)+1}));const topB=Object.entries(bc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(', ');
+    const rows=ent.slice(-10).reverse().map(e=>{const p=POOL.find(q=>q.id===e.cid);return `<div class="db-row"><div class="db-lab"><span>${esc(shortDate(e.date))} · ${esc(p?p.t:'')}</span><span>${e.s==='done'?esc(e.ant+' → '+e.real):'cambiado'}</span></div>${e.nota?`<div class="small mut">${esc(e.nota)}</div>`:''}</div>`}).join('');
+    return `<div class="pt-card"><div class="pt-head"><b>${esc(d.alias||'Sin apodo')}${id===uid?' <span class="small mut">(vos)</span>':''}</b><span class="small mut">${lastDay?'último: '+esc(shortDate(lastDay)):'sin registros'}</span></div>
+    <div class="small mut">${esc(LV[li.l])} · ${esc((d.areas||[]).map(k=>AREAS[k]?AREAS[k].n:k).join(', '))}</div>
+    <div class="pt-nums"><div><b>${dn.length}</b><span>reps</span></div><div><b>${wk}</b><span>esta semana</span></div><div><b>${sw.length}</b><span>cambios</span></div><div><b>${gap}</b><span>creía − fue</span></div></div>
+    ${topB?`<div class="small">Trajes de buzo frecuentes: <b>${esc(topB)}</b></div>`:''}
+    ${rows?`<details><summary>Últimos registros</summary>${rows}</details>`:''}</div>`}).join('');
+}
+
+/* ---------- arranque ---------- */
+const use=n=>window.claude&&window.claude.use?window.claude.use(n).catch(()=>null):Promise.resolve(null);
+async function boot(){
+  const [u,d,dw]=await Promise.all([use('user'),use('db'),use('downloads')]);
+  dl=dw;
+  if(u){uid=await u.id();isOwner=await u.isOwner()}
+  const local=localLoad();
+  if(d&&uid){
+    db=d;mode='cloud';$('navTher').hidden=!isOwner;
+    let remote=null,ok=false;
+    try{remote=await Promise.race([db.doc('pacientes/'+uid).get(),new Promise((_,r)=>setTimeout(()=>r({code:'timeout'}),10000))]);ok=true}catch(e){}
+    if(ok&&remote.exists){S=JSON.parse(JSON.stringify(remote.data()));setSync('cloud')}
+    else if(ok&&local){S=local;save()}
+    else if(!ok){mode='local';S=local;setSync('local');banner('No se pudo conectar con la nube. Lo que hagas se guarda en este dispositivo.')}
+  }else{
+    mode='local';S=local;
+    try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+    const standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+    if(!standalone&&/iPhone|iPad|iPod/.test(navigator.userAgent))banner('Tu progreso se guarda en este teléfono. Para que Safari no lo borre, agregá la app a la pantalla de inicio: botón <b>Compartir</b> → <b>Agregar a inicio</b>.');
+  }
+  if(!S){show('onb');$('therBtn').hidden=!(isOwner&&db);pills($('areasOnb'),areaList(),['laburo','amigos','cotidiano'],true);drawPool($('poolOnb'),.06,'Arrancás acá');if(mode==='cloud')setSync('cloud');else setSync('local')}
+  else{if(!Array.isArray(S.entries))S.entries=[];if(!Array.isArray(S.areas)||!S.areas.length)S.areas=Object.keys(AREAS);if(mode!=='cloud')setSync('local');go('today')}
+}
+let lastDay=today();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S&&today()!==lastDay){lastDay=today();if(view==='today')renderToday()}});
+boot();
+}
+</script>
+
+</body>
+</html>
